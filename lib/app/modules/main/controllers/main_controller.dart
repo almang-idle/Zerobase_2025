@@ -3,7 +3,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:logger/logger.dart';
+import 'package:myapp/app/cores/models/tag_logger.dart';
 import 'package:myapp/app/services/device_service.dart';
 
 import '../../../routes/app_pages.dart';
@@ -12,7 +12,7 @@ class MainController extends GetxController
     with GetSingleTickerProviderStateMixin {
   DeviceService get _deviceService => Get.find<DeviceService>();
 
-  Logger get _log => Get.find<Logger>(tag: "main");
+  final _log = TagLogger("MainController");
   late PageController pageController;
   final RxInt _rxCurTabIndex = RxInt(0);
 
@@ -46,7 +46,7 @@ class MainController extends GetxController
 
   void subscriptionWeight() {
     _sub = _deviceService.getWeight().listen((value) {
-      _log.d(value);
+      _log.d(value.toString());
       _weightBuffer.add(value);
 
       if (_weightBuffer.length > 20) {

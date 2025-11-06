@@ -1,8 +1,8 @@
-import 'package:logger/logger.dart';
+import 'package:myapp/app/cores/models/tag_logger.dart';
 import 'package:myapp/app/services/device_service.dart';
 
 class DeviceServiceDummy extends DeviceService {
-  final Logger _log = Logger();
+  final _log = TagLogger("DeviceServiceDummy");
 
   @override
   Stream<double> getWeight() {

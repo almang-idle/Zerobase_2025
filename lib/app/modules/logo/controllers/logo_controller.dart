@@ -17,6 +17,7 @@ class LogoController extends GetxController {
     _checkConnectionTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!deviceService.adapterState.value) {
         // Get.toNamed();
+
         log.e("Bluetooth is off. Redirecting to Bluetooth setup page.");
         return;
       }

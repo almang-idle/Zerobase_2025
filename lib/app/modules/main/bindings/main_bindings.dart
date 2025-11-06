@@ -7,6 +7,5 @@ class MainBindings extends Bindings {
   @override
   void dependencies() {
     Get.put<MainController>(MainController());
-    Get.put<Logger>(Logger(), tag: "main");
   }
 }

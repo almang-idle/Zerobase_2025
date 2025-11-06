@@ -3,7 +3,7 @@ import 'dart:collection';
 
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:logger/logger.dart';
+import 'package:myapp/app/cores/models/tag_logger.dart';
 import 'package:myapp/app/services/inactivity_service.dart';
 
 import '../../../routes/app_pages.dart';
@@ -32,7 +32,7 @@ class RefillController extends GetxController
 
   bool get measureFlag => _rxMeasureFlag.value;
 
-  Logger get _log => Get.find<Logger>(tag: "refill");
+  final _log = TagLogger("RefillController");
 
   @override
   void onInit() {

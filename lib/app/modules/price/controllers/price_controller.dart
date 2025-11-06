@@ -3,7 +3,7 @@ import 'dart:collection';
 
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:logger/logger.dart';
+import 'package:myapp/app/cores/models/tag_logger.dart';
 import 'package:myapp/app/services/device_service.dart';
 import 'package:myapp/app/services/inactivity_service.dart';
 
@@ -11,7 +11,7 @@ import '../../product/responses/product_response.dart';
 
 class PriceController extends GetxController {
   // 이전 화면에서 전달받을 데이터
-  final Logger _log = Logger();
+  final _log = TagLogger("PriceController");
   late final Product selectedProduct;
   final RxInt _rxProductWeight = RxInt(0);
 
