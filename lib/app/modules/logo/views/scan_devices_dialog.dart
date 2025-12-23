@@ -115,14 +115,11 @@ class _ScanDevicesDialogState extends State<ScanDevicesDialog> {
                                       ? null
                                       : () async {
                                           _connectingDevices[device.id] = true;
-                                          try {
-                                            deviceService.connectToDevice(device.id).then((_) {
-                                              Get.offAllNamed(Routes.MAIN);
-                                            });
-                                          } catch (e) {
-                                            // 연결 실패 시 버튼 재활성화
+                                          deviceService.connectToDevice(device.id).then((_) {
+                                            Get.offAllNamed(Routes.MAIN);
+                                          }).catchError((e){
                                             _connectingDevices[device.id] = false;
-                                          }
+                                          });
                                         },
                                   style: ElevatedButton.styleFrom(
                                       padding: EdgeInsets.symmetric(horizontal: 12),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:myapp/app/modules/refill/views/measure_weight_view.dart';
 import 'package:myapp/app/modules/refill/controllers/refill_controller.dart';
 import 'package:myapp/app/modules/refill/views/guide_fill_view.dart';
 import 'package:myapp/app/modules/refill/views/guide_put_view.dart';
@@ -23,6 +24,7 @@ class RefillView extends BaseView<RefillController> {
   List<Widget> pages = [
     GuideFillView(),
     GuidePutView(),
+    MeasureWeightView()
   ];
 
   @override

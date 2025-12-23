@@ -53,20 +53,36 @@ class RefillController extends GetxController
     _rxCurTabIndex.value = index;
   }
 
+  bool bufferIsFull(){
+    return _weightBuffer.length >= WeightConstants.bufferSize;
+  }
+
+  void addToBuffer(double value){
+    _weightBuffer.add(value);
+    if (_weightBuffer.length > WeightConstants.bufferSize) {
+      _weightBuffer.removeFirst();
+    } else {
+      return;
+    }
+  }
+
   void subscriptionWeight() {
     _sub = _deviceService.getWeight().listen((value) {
-      _log.d(value);
-      _weightBuffer.add(value);
+      _log.d(value.toString());
+      addToBuffer(value);
 
-      if (value <= WeightConstants.minimumWeight) {
-        return;
-      }
-
-      if (_weightBuffer.length > WeightConstants.bufferSize) {
-        _weightBuffer.removeFirst();
+      if (value > (_deviceService.emptyBottleWeight.value ?? 0).toDouble() + WeightConstants.minimumWeight) {
+        _rxMeasureFlag(true);
+        if ((pageController.page ?? 0) <= 1) {
+          animatedToPage(2);
+        }
       } else {
+        _rxMeasureFlag(false);
+        animatedToPage(1);
         return;
       }
+
+      if(!bufferIsFull()) return;
 
       double sum = 0;
       for (var e in _weightBuffer) {
@@ -84,11 +100,13 @@ class RefillController extends GetxController
       }
       if (isStable) {
         _rxStableFlag(true);
-        _sub.cancel();
         _deviceService.setTotalWeight(avg.round());
-        if (!isClosed) {
-          Get.toNamed(Routes.PRODUCT);
-        }
+        Future.delayed(AppDurations.weightStabilizationDelay, () {
+          if (!isClosed) {
+            Get.toNamed(Routes.PRODUCT);
+          }
+        });
+        _sub.cancel();
       } else {
         _rxStableFlag(false);
       }
