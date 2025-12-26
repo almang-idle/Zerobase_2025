@@ -40,7 +40,15 @@ class PriceController extends GetxController {
       return;
     }
     selectedProduct = args['product'] as Product;
+    fillWithTotalWeight();
     subscriptionWeight();
+  }
+
+  void fillWithTotalWeight(){
+    double totalWeight = (deviceService.totalWeight.value ?? 0).toDouble();
+    for(int i = 0; i < WeightConstants.bufferSize; i++){
+      _weightBuffer.add(totalWeight);
+    }
   }
 
   // 전화번호 뒷자리 (MainController에서 가져오는 예시)
