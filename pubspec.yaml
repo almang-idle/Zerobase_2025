@@ -43,6 +43,7 @@ dependencies:
   shimmer: ^3.0.0
   flutter_blue_plus: ^2.0.0
   app_settings: ^5.1.1
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
@@ -95,3 +96,12 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/icon.png"
+  image_path_ios: "assets/icon/icon.png"
+  remove_alpha_ios: true
+  adaptive_icon_background: "assets/icon/background.png"  # 원하는 배경색 (Hex 코드)
+  adaptive_icon_foreground: "assets/icon/foreground.png"
