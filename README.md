@@ -416,7 +416,7 @@ MainView (초기 화면 복귀)
 
 이 프로젝트는 KAIST Tech for Impact 프로그램의 일환으로 개발되었습니다.
 
-Copyright © 2024 Team 알맹이들. All Rights Reserved.
+Copyright © 2025 Team 알맹이들. All Rights Reserved.
 
 ---
 
@@ -843,7 +843,7 @@ Security audit results and improvement recommendations can be found in `/reviews
 
 This project was developed as part of the KAIST Tech for Impact program.
 
-Copyright © 2024 Team Almang-e-deul. All Rights Reserved.
+Copyright © 2025 Team Almang-e-deul. All Rights Reserved.
 
 ---
 
