@@ -44,10 +44,23 @@ class MainController extends GetxController
     _rxCurTabIndex.value = index;
   }
 
+  bool bufferIsFull(){
+    return _weightBuffer.length >= WeightConstants.bufferSize;
+  }
+
+  void addToBuffer(double value){
+    _weightBuffer.add(value);
+    if (_weightBuffer.length > WeightConstants.bufferSize) {
+      _weightBuffer.removeFirst();
+    } else {
+      return;
+    }
+  }
+
   void subscriptionWeight() {
     _sub = _deviceService.getWeight().listen((value) {
       _log.d(value.toString());
-      _weightBuffer.add(value);
+      addToBuffer(value);
 
       if (value > WeightConstants.minimumWeight) {
         _rxMeasureFlag(true);
@@ -60,11 +73,7 @@ class MainController extends GetxController
         return;
       }
 
-      if (_weightBuffer.length > WeightConstants.bufferSize) {
-        _weightBuffer.removeFirst();
-      } else {
-        return;
-      }
+      if(!bufferIsFull()) return;
 
       double sum = 0;
       for (var e in _weightBuffer) {

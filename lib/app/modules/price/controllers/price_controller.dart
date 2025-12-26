@@ -14,9 +14,7 @@ class PriceController extends GetxController {
   // 이전 화면에서 전달받을 데이터
   final _log = TagLogger("PriceController");
   late final Product selectedProduct;
-  final RxInt _rxProductWeight = RxInt(0);
 
-  int get productWeight => _rxProductWeight.value;
   final Queue<double> _weightBuffer = Queue<double>();
 
   InactivityService get inactivityService => Get.find<InactivityService>();
@@ -29,6 +27,8 @@ class PriceController extends GetxController {
 
   bool get stableFlag => _rxStableFlag.value;
 
+  final RxInt _rxCurrentWeight = RxInt(0);
+
   // 컨트롤러가 초기화될 때 Get.arguments를 통해 데이터를 받음
   @override
   void onInit() {
@@ -40,11 +40,16 @@ class PriceController extends GetxController {
       return;
     }
     selectedProduct = args['product'] as Product;
+    fillWithTotalWeight();
     subscriptionWeight();
   }
 
-  // 최종 가격 계산
-  int get totalPrice => (productWeight * selectedProduct.unitPrice).round();
+  void fillWithTotalWeight(){
+    double totalWeight = (deviceService.totalWeight.value ?? 0).toDouble();
+    for(int i = 0; i < WeightConstants.bufferSize; i++){
+      _weightBuffer.add(totalWeight);
+    }
+  }
 
   // 전화번호 뒷자리 (MainController에서 가져오는 예시)
   String get phoneSuffix {
@@ -61,31 +66,57 @@ class PriceController extends GetxController {
     if (stableFlag) {
       Get.back(result: {
         'product': selectedProduct,
-        'weight': productWeight,
-        'price': totalPrice,
+        'weight': productWeight(),
+        'price': totalPrice(),
       });
+    }
+  }
+
+  int productWeight() {
+    return (deviceService.totalWeight.value ?? 0) -
+                (deviceService.emptyBottleWeight.value ?? 0) >=
+            0
+        ? (deviceService.totalWeight.value ?? 0) -
+            (deviceService.emptyBottleWeight.value ?? 0)
+        : 0;
+  }
+
+  int currentWeight() {
+    return (_rxCurrentWeight.value ?? 0) -
+                (deviceService.emptyBottleWeight.value ?? 0) >=
+            0
+        ? (_rxCurrentWeight.value ?? 0) -
+            (deviceService.emptyBottleWeight.value ?? 0)
+        : 0;
+  }
+
+  bool bufferIsFull() {
+    return _weightBuffer.length >= WeightConstants.bufferSize;
+  }
+
+  void addToBuffer(double value) {
+    _weightBuffer.add(value);
+    if (_weightBuffer.length > WeightConstants.bufferSize) {
+      _weightBuffer.removeFirst();
+    } else {
+      return;
     }
   }
 
   void subscriptionWeight() {
     _sub = deviceService.getWeight().listen((value) {
       _log.d(value);
-      _weightBuffer.add(value);
-      _rxProductWeight(
-          value.round() - (deviceService.emptyBottleWeight.value ?? 0) >= 0
-              ? value.round() - (deviceService.emptyBottleWeight.value ?? 0)
-              : 0);
+      addToBuffer(value);
+      _rxCurrentWeight(value.round());
 
-      if (_weightBuffer.length > WeightConstants.bufferSize) {
-        _weightBuffer.removeFirst();
-      } else {
-        return;
-      }
-
-      if (value < WeightConstants.minimumWeight) {
+      if (value <
+          (deviceService.emptyBottleWeight.value ?? 0) +
+              WeightConstants.minimumWeight) {
         _rxStableFlag(false);
         return;
       }
+
+      if (!bufferIsFull()) return;
 
       double sum = 0;
       for (var e in _weightBuffer) {
@@ -95,10 +126,16 @@ class PriceController extends GetxController {
       double avg = sum / _weightBuffer.length;
       bool isStable = true;
       for (var e in _weightBuffer) {
-        if (e > avg + WeightConstants.stabilityTolerance ||
-            e < avg - WeightConstants.stabilityTolerance) {
+        if (e > avg.round() + WeightConstants.stabilityTolerance ||
+            e < avg.round() - WeightConstants.stabilityTolerance) {
           isStable = false;
           break;
+        }
+      }
+      if (isStable) {
+        if (((deviceService.totalWeight.value ?? 0) - avg.round()).abs() >=
+            WeightConstants.minimumWeight) {
+          deviceService.setTotalWeight(avg.round());
         }
       }
       _rxStableFlag(isStable);
@@ -108,6 +145,11 @@ class PriceController extends GetxController {
       _log.d("Weight stream is done");
     });
   }
+
+  // 최종 가격 계산
+  int totalPrice() => (productWeight() * selectedProduct.unitPrice).round();
+
+  int currentPrice() => (currentWeight() * selectedProduct.unitPrice).round();
 
   @override
   void onClose() {

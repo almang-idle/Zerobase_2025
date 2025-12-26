@@ -149,18 +149,44 @@ class DeviceServiceImpl extends DeviceService {
   }
 
   @override
-  Future connectToDevice(String deviceId) {
+  Future connectToDevice(String deviceId) async {
     ScanResult? result = findScanResultById(deviceId);
 
     if (result == null) {
       _log.e("connectToDevice: 장치를 찾을 수 없습니다. ID: $deviceId");
-      return Future.error("장치를 찾을 수 없습니다.");
+      throw Exception("장치를 찾을 수 없습니다.");
     }
 
-    return result.device.connect(license: License.free).then((_) {
+    final device = result.device;
+
+    try {
+      // 1. 이미 연결된 장치가 있다면 먼저 연결 해제
+      final connectedDevices = FlutterBluePlus.connectedDevices;
+      for (var connectedDev in connectedDevices) {
+        _log.i("Disconnecting previously connected device: ${connectedDev.remoteId}");
+        await connectedDev.disconnect();
+      }
+
+      // 2. 약간의 딜레이 추가 (BLE 스택 안정화)
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // 3. 새 장치에 연결 시도 (timeout 15초)
+      _log.i("Attempting to connect to device: $deviceId");
+      await device.connect(
+        license: License.free,
+        timeout: const Duration(seconds: 15),
+      );
+
+      // 4. 연결 성공
       connectedDevice(scanResultToDevice(result));
-      _log.i("Connected to device: ${connectedDevice.value!.name} (${connectedDevice.value!.id})");
-    });
+      _log.i("Successfully connected to device: ${connectedDevice.value!.name} (${connectedDevice.value!.id})");
+
+    } catch (e) {
+      // 연결 실패
+      connectedDevice(null);
+      _log.e("Failed to connect to device $deviceId: $e");
+      rethrow;
+    }
   }
 
   StreamSubscription scanForDevices() {

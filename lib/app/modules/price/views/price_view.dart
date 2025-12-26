@@ -82,7 +82,7 @@ class PriceView extends BaseView<PriceController> {
                   children: [
                     Obx(() {
                       return Text(
-                        controller.formatNumber(controller.productWeight),
+                        controller.formatNumber(controller.stableFlag ? controller.productWeight() : controller.currentWeight()),
                         style: TextStyle(
                           fontSize: 60,
                           fontWeight: FontWeight.bold,
@@ -117,7 +117,7 @@ class PriceView extends BaseView<PriceController> {
                 ),
                 // 최종 가격
                 Text(
-                  '${controller.formatNumber(controller.totalPrice)} 원',
+                  '${controller.formatNumber(controller.stableFlag ? controller.totalPrice() : controller.currentWeight())} 원',
                   style: TextStyle(
                     fontSize: 60,
                     fontWeight: FontWeight.bold,
